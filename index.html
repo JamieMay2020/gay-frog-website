@@ -20,7 +20,6 @@
       min-height: 100vh;
     }
 
-    /* Optional: Class for "gay" background */
     body.gay {
       background-color: #ffe4e1;
     }
@@ -40,14 +39,13 @@
       color: black;
     }
 
-    /* Center the nav links horizontally */
     .nav {
       margin: 1rem 0;
       display: flex;
       justify-content: center;
       width: 100%;
     }
-    
+
     .nav a {
       margin: 0 1rem;
       color: black;
@@ -55,7 +53,6 @@
       font-weight: bold;
     }
 
-    /* Container to center the frog vertically and horizontally */
     #game-area {
       position: relative;
       height: 350px;
@@ -79,18 +76,47 @@
     #frog:active {
       transform: scale(0.95);
     }
+
+    #counter {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 20px;
+      color: #333;
+    }
   </style>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCA07kFPgeXvK9tvxR2h5iWYfbB7mMhvPU",
+      authDomain: "gay-frog-counter.firebaseapp.com",
+      projectId: "gay-frog-counter",
+      storageBucket: "gay-frog-counter.appspot.com",
+      messagingSenderId: "572065851645",
+      appId: "1:572065851645:web:72d2db94af95b03ef713d4",
+      measurementId: "G-FGGGLWDWMF",
+      databaseURL: "https://gay-frog-counter-default-rtdb.firebaseio.com"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const counterRef = db.ref("gayCounter");
+  </script>
 </head>
 <body>
   <div class="content-wrapper">
-    <h1>TURN THE FROG GAY</h1>
+    <h1>TURN THE FROGS GAY</h1>
     <div class="nav">
       <a href="https://x.com/solgayfrog" target="_blank">x.com</a>
-      <a href="https://pump.fun" target="_blank">pump.fun</a>
+      <a href="https://pumpfun.com" target="_blank">pump.fun</a>
+      <a href="https://telegram.org" target="_blank">telegram</a>
     </div>
     <div id="game-area">
       <img id="frog" src="n-frog1.png" alt="Frog">
     </div>
+    <div id="counter">Turned gay 0 times</div>
   </div>
   <audio id="ribbit-sound" src="videoplayback-[AudioTrimmer.com].m4a"></audio>
 
@@ -99,28 +125,39 @@
       const frogImg = document.getElementById('frog');
       const audio = document.getElementById("ribbit-sound");
       const body = document.body;
+      const counter = document.getElementById("counter");
 
       let isGay = false;
+      let clickCount = 0;
 
-      function toggleFrogState() {
+      // 🔄 Load from Firebase
+      counterRef.on("value", snapshot => {
+        clickCount = snapshot.val() || 0;
+        counter.textContent = `Turned gay ${clickCount} times`;
+      });
+
+      function turnFrogGay() {
+        frogImg.src = "gay-frog.png";
+        audio.currentTime = 0;
+        audio.play().catch(e => console.error("Error playing sound:", e));
+
         if (!isGay) {
-          // Change from normal to gay
-          frogImg.src = "gay-frog.png";
-          audio.currentTime = 0;
-          audio.play().catch(e => console.error("Error playing sound:", e));
-          body.classList.add('gay');
           isGay = true;
-        } else {
-          // Change back from gay to normal
-          frogImg.src = "n-frog1.png";
-          body.classList.remove('gay');
-          isGay = false;
-          // No audio plays when changing back to normal
+          body.classList.add('gay');
         }
+
+        // ⬆️ Update Firebase counter
+        clickCount++;
+        counterRef.set(clickCount);
+
+        setTimeout(() => {
+          frogImg.src = "n-frog1.png";
+          isGay = false;
+          body.classList.remove('gay');
+        }, 1500);
       }
 
-      // Add event listener to the frog image
-      frogImg.addEventListener('click', toggleFrogState);
+      frogImg.addEventListener('click', turnFrogGay);
     });
   </script>
 </body>
