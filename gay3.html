@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Turn the Frogs Gay</title>
+  <style>
+    body {
+      background-color: white;
+      text-align: center;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      transition: background-color 1s ease;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    /* Optional: Class for "gay" background */
+    body.gay {
+      background-color: #ffe4e1;
+    }
+
+    .content-wrapper {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    h1 {
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+      color: black;
+    }
+
+    /* Center the nav links horizontally */
+    .nav {
+      margin: 1rem 0;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+    
+    .nav a {
+      margin: 0 1rem;
+      color: black;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    /* Container to center the frog vertically and horizontally */
+    #game-area {
+      position: relative;
+      height: 350px;
+      width: 100%;
+      margin: 2rem 0;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #frog {
+      display: block;
+      width: 250px;
+      cursor: pointer;
+      position: relative;
+      z-index: 10;
+      transition: transform 0.1s ease;
+    }
+
+    #frog:active {
+      transform: scale(0.95);
+    }
+  </style>
+</head>
+<body>
+  <div class="content-wrapper">
+    <h1>TURN THE FROG GAY</h1>
+    <div class="nav">
+      <a href="https://x.com/solgayfrog" target="_blank">x.com</a>
+      <a href="https://pumpfun.com" target="_blank">pump.fun</a>
+    </div>
+    <div id="game-area">
+      <img id="frog" src="n-frog1.png" alt="Frog">
+    </div>
+  </div>
+  <audio id="ribbit-sound" src="videoplayback-[AudioTrimmer.com].m4a"></audio>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const frogImg = document.getElementById('frog');
+      const audio = document.getElementById("ribbit-sound");
+      const body = document.body;
+
+      let isGay = false;
+
+      function toggleFrogState() {
+        if (!isGay) {
+          // Change from normal to gay
+          frogImg.src = "gay-frog.png";
+          audio.currentTime = 0;
+          audio.play().catch(e => console.error("Error playing sound:", e));
+          body.classList.add('gay');
+          isGay = true;
+        } else {
+          // Change back from gay to normal
+          frogImg.src = "n-frog1.png";
+          body.classList.remove('gay');
+          isGay = false;
+          // No audio plays when changing back to normal
+        }
+      }
+
+      // Add event listener to the frog image
+      frogImg.addEventListener('click', toggleFrogState);
+    });
+  </script>
+</body>
+</html>
