@@ -83,27 +83,13 @@
       margin-top: 20px;
       color: #333;
     }
+
+    #debug {
+      margin-top: 10px;
+      color: #999;
+      font-size: 12px;
+    }
   </style>
-
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCA07kFPgeXvK9tvxR2h5iWYfbB7mMhvPU",
-      authDomain: "gay-frog-counter.firebaseapp.com",
-      projectId: "gay-frog-counter",
-      storageBucket: "gay-frog-counter.appspot.com",
-      messagingSenderId: "572065851645",
-      appId: "1:572065851645:web:72d2db94af95b03ef713d4",
-      measurementId: "G-FGGGLWDWMF",
-      databaseURL: "https://gay-frog-counter-default-rtdb.firebaseio.com"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const counterRef = db.ref("gayCounter");
-  </script>
 </head>
 <body>
   <div class="content-wrapper">
@@ -117,55 +103,94 @@
       <img id="frog" src="n-frog1.png" alt="Frog">
     </div>
     <div id="counter">Turned gay 0 times</div>
+    <div id="debug"></div>
   </div>
   <audio id="ribbit-sound" src="videoplayback-[AudioTrimmer.com].m4a"></audio>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const frogImg = document.getElementById('frog');
-      const audio = document.getElementById("ribbit-sound");
-      const body = document.body;
-      const counter = document.getElementById("counter");
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import { getDatabase, ref, onValue, get, set } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-analytics.js";
 
-      let isGay = false;
-      let clickCount = 0;
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCA07kFPgeXvK9tvxR2h5iWYfbB7mMhvPU",
+      authDomain: "gay-frog-counter.firebaseapp.com",
+      databaseURL: "https://gay-frog-counter-default-rtdb.firebaseio.com", // Make sure this is correct
+      projectId: "gay-frog-counter",
+      storageBucket: "gay-frog-counter.firebasestorage.app",
+      messagingSenderId: "572056851645",
+      appId: "1:572056851645:web:c329dbad507b1ce6f713d4",
+      measurementId: "G-TGEZHE8V3K"
+    };
 
-      // 🔄 Load from Firebase
-      counterRef.on("value", snapshot => {
-        clickCount = snapshot.val() || 0;
+    // Elements
+    const debugElement = document.getElementById('debug');
+    const frogImg = document.getElementById('frog');
+    const audio = document.getElementById("ribbit-sound");
+    const body = document.body;
+    const counter = document.getElementById("counter");
+    
+    let isGay = false;
+    let clickCount = 0;
+    let isClickable = true;
+
+    try {
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+      const database = getDatabase(app);
+      const gayCounterRef = ref(database, "gayCounter");
+      
+      // Listen for counter updates
+      onValue(gayCounterRef, (snapshot) => {
+        const newCount = snapshot.val() || 0;
+        clickCount = newCount;
         counter.textContent = `Turned gay ${clickCount} times`;
+        debugElement.textContent = ``;
+      }, (error) => {
+        debugElement.textContent = ``;
       });
 
       function turnFrogGay() {
+        if (!isClickable) return;
+        isClickable = false;
+        
         frogImg.src = "gay-frog.png";
         audio.currentTime = 0;
-        audio.play().catch(e => console.error("Error playing sound:", e));
+        audio.play().catch(e => {
+          debugElement.textContent = `Audio error: ${e.message}`;
+        });
 
         if (!isGay) {
           isGay = true;
           body.classList.add('gay');
         }
 
-        // Use a transaction to safely increment the counter
-        counterRef.transaction(currentCount => {
-          return (currentCount || 0) + 1;
-        }).then(result => {
-          // Update the UI with the new value from the transaction
-          clickCount = result.snapshot.val();
-          counter.textContent = `Turned gay ${clickCount} times`;
-        }).catch(error => {
-          console.error("Transaction failed: ", error);
+        // Get current count and increment
+        get(gayCounterRef).then((snapshot) => {
+          const currentCount = snapshot.val() || 0;
+          return set(gayCounterRef, currentCount + 1);
+        }).then(() => {
+          debugElement.textContent = "";
+        }).catch((error) => {
+          debugElement.textContent = ``;
         });
 
         setTimeout(() => {
           frogImg.src = "n-frog1.png";
           isGay = false;
           body.classList.remove('gay');
+          isClickable = true;
         }, 1500);
       }
 
       frogImg.addEventListener('click', turnFrogGay);
-    });
+      
+    } catch (error) {
+      debugElement.textContent = `Initialization error: ${error.message}`;
+    }
   </script>
 </body>
 </html>
