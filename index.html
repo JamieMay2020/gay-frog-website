@@ -146,9 +146,16 @@
           body.classList.add('gay');
         }
 
-        // ⬆️ Update Firebase counter
-        clickCount++;
-        counterRef.set(clickCount);
+        // Use a transaction to safely increment the counter
+        counterRef.transaction(currentCount => {
+          return (currentCount || 0) + 1;
+        }).then(result => {
+          // Update the UI with the new value from the transaction
+          clickCount = result.snapshot.val();
+          counter.textContent = `Turned gay ${clickCount} times`;
+        }).catch(error => {
+          console.error("Transaction failed: ", error);
+        });
 
         setTimeout(() => {
           frogImg.src = "n-frog1.png";
